@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                 CallbackContext, ConversationHandler)
-import configparser
+# import configparser
 import logging
 import os,datetime
 from ChatGPT_HKBU import HKBU_ChatGPT
@@ -14,16 +14,16 @@ global mango1
 
 def main():
     # Load your token and create an Updater for your Bot
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    updater = Updater(token=config['TELEGRAM']['ACCESS_TOKEN'], use_context=True)
+    # config = configparser.ConfigParser()
+    # config.read('config.ini')
+    updater = Updater(token=os.environ['TELEGRAM_ACCESS_TOKEN'], use_context=True)
     dispatcher = updater.dispatcher 
     # global redis1
     # redis1 = redis.Redis(host=config['REDIS']['HOST'],
     #             password=config['REDIS']['PASSWORD'],
     #             port=config['REDIS']['REDISPORT'])
     global mango1,mongodb1,commentDB,outdoorDB
-    mongo1 = pymongo.MongoClient('mongodb://'+config['MONGODB']['USERNAME']+':'+config['MONGODB']['PASSWORD']+'@'+config['MONGODB']['ENDPOINT'])
+    mongo1 = pymongo.MongoClient('mongodb://'+os.environ['MONGODB_USERNAME']+':'+os.environ['MONGODB_PASSWORD']+'@'+os.environ['MONGODB_ENDPOINT'])
     mongodb1= mongo1['chatbot'] 
     commentDB = mongodb1['tv_comments']   
     outdoorDB = mongodb1['outdoor']   

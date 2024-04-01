@@ -1,4 +1,4 @@
-import configparser
+# import configparser
 import requests
 import os
 
@@ -8,12 +8,12 @@ class HKBU_ChatGPT():
     
     def submit(self,message):
         conversation = [{"role": "user", "content": message}]
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        # url = os.environ['CHATGPT_BASICURL'] +"/deployments/" + os.environ['CHATGPT_MODELNAME'] +"/chat/completions/?api-version=" +os.environ['CHATGPT_APIVERSION']
-        url = config['CHATGPT']['BASICURL']+"/deployments/" + config['CHATGPT']['MODELNAME'] +"/chat/completions/?api-version=" +config['CHATGPT']['APIVERSION']
+        # config = configparser.ConfigParser()
+        # config.read('config.ini')
+        url = os.environ['CHATGPT_BASICURL'] +"/deployments/" + os.environ['CHATGPT_MODELNAME'] +"/chat/completions/?api-version=" +os.environ['CHATGPT_APIVERSION']
+        # url = config['CHATGPT']['BASICURL']+"/deployments/" + config['CHATGPT']['MODELNAME'] +"/chat/completions/?api-version=" +config['CHATGPT']['APIVERSION']
         headers = { 'Content-Type': 'application/json',
-        'api-key': config['CHATGPT']['ACCESS_TOKEN'] }
+        'api-key': os.environ['CHATGPT_ACCESS_TOKEN'] }
         payload = { 'messages': conversation }
         response = requests.post(url, json=payload, headers=headers)
         if response.status_code == 200:
