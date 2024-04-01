@@ -1,0 +1,22 @@
+name: Docker Image CI/CD
+on:
+ push:
+   branches:
+     - main # change to main if needed
+jobs:
+  # 构建并上传 Docker镜像
+  build: 
+    runs-on: ubuntu-latest # 依赖的环境
+    concurrency: deploy-group # optional: ensure only one action runs at a time      
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Image
+        run: docker-compose -f chatbot.yaml up
+      - name: Login to Registry
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push Image
+        run: |
+          docker tag chatbot:latest dockergypsy/chatbot:latest
+          docker tag mongo:latest dockergypsy/mongo:latest
+          docker push dockergypsy/chatbot:latest
+          docker push dockergypsy/mongo:latest
