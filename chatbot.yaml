@@ -1,0 +1,11 @@
+version: '3'
+services:
+  chatbot:
+    build: .
+    image: chatbot
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo
+    volumes:
+      - /host/path:/container/path
