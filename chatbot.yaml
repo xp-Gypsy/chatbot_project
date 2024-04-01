@@ -3,9 +3,12 @@ services:
   chatbot:
     build: .
     image: chatbot
+    platform: linux/amd64
     depends_on:
       - mongo
   mongo:
     image: mongo
-    volumes:
-      - /host/path:/container/path
+    platform: linux/amd64
+    # volumes:
+    #   - /data/mongo/db:/data/db
+    #   - /data/mongo/log:/var/log/mongodb
