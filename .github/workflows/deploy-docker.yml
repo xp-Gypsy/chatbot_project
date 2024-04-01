@@ -17,6 +17,4 @@ jobs:
       - name: Push Image
         run: |
           docker tag chatbot:latest dockergypsy/chatbot:latest
-          docker tag mongo:latest dockergypsy/mongo:latest
           docker push dockergypsy/chatbot:latest
-          docker push dockergypsy/mongo:latest
