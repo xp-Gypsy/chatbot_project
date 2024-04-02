@@ -22,12 +22,12 @@ def main():
     # redis1 = redis.Redis(host=config['REDIS']['HOST'],
     #             password=config['REDIS']['PASSWORD'],
     #             port=config['REDIS']['REDISPORT'])
-    global mango1,mongodb1,commentDB,outdoorDB
+    global mango1,mongodb1,commentDB,outdoorDB,cookingDB
     mongo1 = pymongo.MongoClient('mongodb://'+os.environ['MONGODB_USERNAME']+':'+os.environ['MONGODB_PASSWORD']+'@'+os.environ['MONGODB_ENDPOINT'])
     mongodb1= mongo1['chatbot'] 
     commentDB = mongodb1['tv_comments']   
     outdoorDB = mongodb1['outdoor']   
-
+    cookingDB = mongodb1['cooking']  
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO)
 
@@ -77,6 +77,7 @@ def main():
     dispatcher.add_handler(chatgpt_handler)
     dispatcher.add_handler(share_outdoors_handler)
     dispatcher.add_handler(share_cooking_handler)
+    dispatcher.add_handler(CommandHandler("getInfo", getInfo))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("hello", hello_command))
 
@@ -93,6 +94,37 @@ def echo(update, context):
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text('Helping you helping you.')
+    update.message.reply_text('1. To start a conversation with GPT /chatgpt')
+    update.message.reply_text('2. To upload a tv comments with its title /add_comments')
+    update.message.reply_text('3. To share your travel route and pics /share_outdoors')
+    update.message.reply_text('4. To share one cooking video /share_cooking')
+    update.message.reply_text('5. To get sharing from others /getInfo <comments/outdoors/cooking> <nickname>')
+
+def getInfo(update: Update, context: CallbackContext):
+    if context.args[0]=='comments':
+        ret = commentDB.find_one({'nickname':context.args[1]})
+        update.message.reply_text('TV title:'+ret.get('title'))
+        update.message.reply_text('Comments:'+ret.get('comments'))
+    elif context.args[0]=='outdoors':
+        ret = outdoorDB.find_one({'nickname_outdoors':context.args[1]})
+        route_link = ret.get('route_link')
+        pictures = ret.get('pictures')
+        update.message.reply_text('Route link:'+route_link)
+        for i in range(len(pictures)):
+            with open(os.getcwd()+'/'+str(i)+'.png','wb') as file:
+                file.write(pictures[i])
+            file.close()
+            update.message.reply_photo(open(os.getcwd()+'/'+str(i)+'.png','rb'))
+            os.remove(os.getcwd()+'/'+str(i)+'.png')
+    elif context.args[0]=='cooking':
+        update.message.reply_text(context.args[1]+'s cooking video:')
+        gfs = GridFS(mongodb1,collection="cooking")
+        file = gfs.find_one({"author":context.args[1]})
+        with open(os.getcwd()+'/'+"video.mp4","wb") as f:
+            f.write(file.read())
+        f.close()
+        update.message.reply_video(open(os.getcwd()+'/'+'video.mp4','rb'))
+        os.remove(os.getcwd()+'/'+'video.mp4')
 
 def getNickname(update: Update, context: CallbackContext) ->int:
     global nickname
@@ -122,7 +154,7 @@ def add_comments(update: Update, context: CallbackContext) -> int:
         update.message.reply_text('Usage: /add_comments')
 
 def entry_share_outdoors(update, context)->int:
-    update.message.reply_text('Pleaser enter your nickname first:')
+    update.message.reply_text('Pleaser enter your nickname first:(/end to exit)')
     return SHARE_OUTDOORS
 
 def end_share_outdoors(update, context)->int:
@@ -197,7 +229,7 @@ def hello_command(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('Usage: /hello <keyword>')
 
 def entry_chatgpt(update, context)->int:
-    update.message.reply_text('Pleaser start converstaion:')
+    update.message.reply_text('Pleaser start converstaion:(/exit to exit)')
     return CHAT
 
 def equiped_chatgpt(update, context)->int:
